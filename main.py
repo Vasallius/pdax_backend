@@ -9,8 +9,6 @@ account_manager = AccountManager(account_repository)
 transacton_manager = TransactionManager(account_repository)
 statement_manager = StatementManager(account_repository)
 
-use_case = TransactionManager(account_manager, transacton_manager, statement_manager)
-
 
 # Create some customers
 customer1 = Customer(1, "Jed Tan", "jed@pdax.com", "000000000")
