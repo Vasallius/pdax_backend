@@ -40,6 +40,9 @@ class Account:
         self.balance -= amount
         self.transactions.append(Transaction(self.account_id, amount, "withdraw"))
 
+    def get_balance(self):
+        return self.balance
+
 
 class Customer:
     def __init__(self, customer_id, name, email, phone_number):
@@ -111,38 +114,47 @@ class AccountRepository(AccountRepositoryInterface):
         return [account for account in self.accounts.values() if account.customer_id == customer_id]
 
 
-repo = AccountRepository()
-use_case = UseCase(repo)
+account_repository = AccountRepository()
+use_case = UseCase(account_repository)
 
-# customer1 = Customer(1, "Jed", "jed@pdax.com", "00000")
-# customer2 = Customer(1, "Jed", "jed@pdax.com", "10101")
-# account2 = use_case.create_account(customer2.customer_id, customer2.name, customer2.email, customer2.phone_number)
-# account1 = use_case.create_account(customer1.customer_id, customer1.name, customer1.email, customer1.phone_number)
 
 # Create some customers
-customer1 = Customer(1, "John Doe", "john@example.com", "12345")
-customer2 = Customer(2, "Jane Smith", "jane@example.com", "67890")
+customer1 = Customer(1, "Jed Tan", "jed@pdax.com", "000000000")
 
 # Create accounts for the customers
-account1 = use_case.create_account(customer1.customer_id, customer1.name, customer1.email, customer1.phone_number)
-account2 = use_case.create_account(customer2.customer_id, customer2.name, customer2.email, customer2.phone_number)
+account = use_case.create_account(customer1.customer_id, customer1.name, customer1.email, customer1.phone_number)
 
 # Make deposits and withdrawals
-use_case.make_transaction(account1.account_id, 100, "deposit")
-use_case.make_transaction(account2.account_id, 500, "deposit")
-use_case.make_transaction(account1.account_id, 50, "withdraw")
-use_case.make_transaction(account2.account_id, 200, "withdraw")
+# Perform a deposit
+use_case.make_transaction(account.account_id, 500, "deposit")
+print(f"After deposit, balance: {account.get_balance()}")
 
-# Generate account statements
-statement1 = use_case.generate_account_statement(account1.account_id)
-# statement2 = use_case.generate_account_statement(account2.account_id)
+# Perform a withdrawal
+try:
+    use_case.make_transaction(account.account_id, 200, "withdraw")
+    print(f"After withdrawal, balance: {account.get_balance()}")
+except ValueError as e:
+    print(e)
 
-# Print the statements
-print(statement1)
-# print(statement2)
+# Attempt an invalid transaction
+try:
+    use_case.make_transaction(account.account_id, 1000, "withdraw")
+except ValueError as e:
+    print(e)
 
-# Find accounts by customer ID
-# accounts_for_customer1 = repo.find_accounts_by_customer_id(customer1.customer_id)
-# print(accounts_for_customer1)
+# Generate and print the account statement
+statement = use_case.generate_account_statement(account.account_id)
+print("Account Statement:")
+print(statement)
 
-# print(repo.find_accounts_by_customer_id(1))
+# Add and test another account for the same customer to test account retrieval by customer ID
+second_account = use_case.create_account(2, "Satoshi", "satoshi@gmail.com", "4242424242")
+third_account = use_case.create_account(2, "Satoshi", "satoshi@gmail.com", "4242424242")
+
+account = account_repository.find_account_by_id(second_account.account_id)
+print(f"Account found with account ID: {account.account_id}, Balance: {account.get_balance()}")
+
+accounts = account_repository.find_accounts_by_customer_id(2)
+print(f"Accounts found with customer ID 2: {len(accounts)}")
+for acc in accounts:
+    print(f"  Account ID: {acc.account_id}, Balance: {acc.get_balance()}")
