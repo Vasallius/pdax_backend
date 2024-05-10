@@ -1,37 +1,40 @@
 import uuid
 from abc import ABC, abstractmethod
+from typing import List, Optional
 
 
 class AccountRepositoryInterface(ABC):
     @abstractmethod
-    def save_account(self, account):
+    def save_account(self, account: "Account") -> "Account":
         pass
 
     @abstractmethod
-    def find_account_by_id(self, account_id):
+    def find_account_by_id(self, account_id: str) -> Optional["Account"]:
         pass
 
     @abstractmethod
-    def find_accounts_by_customer_id(self, customer_id):
+    def find_accounts_by_customer_id(self, customer_id: str) -> List["Account"]:
         pass
 
 
 class Account:
-    def __init__(self, account_id, customer_id, balance, transactions=None):
+    def __init__(
+        self, account_id: str, customer_id: str, balance: float, transactions: Optional[List["Transaction"]] = None
+    ):
         if balance < 0:
             raise ValueError("Initial balance cannot be negative")
-        self.account_id = account_id
-        self.customer_id = customer_id
-        self.balance = balance
-        self.transactions = transactions if transactions is not None else []
+        self.account_id: str = account_id
+        self.customer_id: str = customer_id
+        self.balance: float = balance
+        self.transactions: List["Transaction"] = transactions if transactions is not None else []
 
-    def deposit(self, amount):
+    def deposit(self, amount: float) -> None:
         if amount <= 0:
             raise ValueError("Deposit amount must be positive")
         self.balance += amount
         self.transactions.append(Transaction(self.account_id, amount, "deposit"))
 
-    def withdraw(self, amount):
+    def withdraw(self, amount: float) -> None:
         if amount <= 0:
             raise ValueError("Withdrawal amount must be positive")
         if amount > self.balance:
@@ -39,36 +42,36 @@ class Account:
         self.balance -= amount
         self.transactions.append(Transaction(self.account_id, amount, "withdraw"))
 
-    def get_balance(self):
+    def get_balance(self) -> float:
         return self.balance
 
 
 class Customer:
-    def __init__(self, customer_id, name, email, phone_number):
-        self.customer_id = customer_id
-        self.name = name
-        self.email = email
-        self.phone_number = phone_number
+    def __init__(self, customer_id: str, name: str, email: str, phone_number: str):
+        self.customer_id: str = customer_id
+        self.name: str = name
+        self.email: str = email
+        self.phone_number: str = phone_number
 
 
 class Transaction:
-    def __init__(self, account_id, amount, type):
-        self.account_id = account_id
-        self.amount = amount
-        self.type = type
+    def __init__(self, account_id: str, amount: float, type: str):
+        self.account_id: str = account_id
+        self.amount: float = amount
+        self.type: str = type
 
 
 class UseCase:
-    def __init__(self, account_repository):
-        self.account_repository = account_repository
+    def __init__(self, account_repository: "AccountRepository"):
+        self.account_repository: "AccountRepository" = account_repository
 
-    def create_account(self, customer_id, name, email, phone_number):
+    def create_account(self, customer_id: str, name: str, email: str, phone_number: str) -> "Account":
         account_id = str(uuid.uuid4())
         new_account = Account(account_id, customer_id, 0)
         self.account_repository.save_account(new_account)
         return new_account
 
-    def make_transaction(self, account_id, amount, transaction_type):
+    def make_transaction(self, account_id: str, amount: float, transaction_type: str) -> "Account":
         account = self.account_repository.find_account_by_id(account_id)
         if account is None:
             raise ValueError("Account not found")
@@ -86,7 +89,7 @@ class UseCase:
         self.account_repository.save_account(account)
         return account
 
-    def generate_account_statement(self, account_id):
+    def generate_account_statement(self, account_id: str) -> str:
         account = self.account_repository.find_account_by_id(account_id)
         if account is None:
             raise ValueError("Account not found")
@@ -100,16 +103,16 @@ class UseCase:
 
 class AccountRepository(AccountRepositoryInterface):
     def __init__(self):
-        self.accounts = {}
+        self.accounts: dict[str, "Account"] = {}
 
-    def save_account(self, account):
+    def save_account(self, account: "Account") -> "Account":
         self.accounts[account.account_id] = account
         return account
 
-    def find_account_by_id(self, account_id):
+    def find_account_by_id(self, account_id: str) -> Optional["Account"]:
         return self.accounts.get(account_id)
 
-    def find_accounts_by_customer_id(self, customer_id):
+    def find_accounts_by_customer_id(self, customer_id: str) -> List["Account"]:
         return [account for account in self.accounts.values() if account.customer_id == customer_id]
 
 
