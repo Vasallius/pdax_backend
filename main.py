@@ -29,10 +29,14 @@ class Customer:
 
 
 class UseCase:
-    @staticmethod
-    def create_account(customer_id, name, email, phone_number):
+    def __init__(self, account_repository):
+        self.account_repository = account_repository
+
+    def create_account(self, customer_id, name, email, phone_number):
         account_id = str(uuid.uuid4())
-        return Account(account_id, customer_id, 0)
+        new_account = Account(account_id, customer_id, 0)
+        self.account_repository.save_account(new_account)
+        return new_account
 
 
 class AccountRepository:
@@ -51,3 +55,15 @@ class AccountRepository:
     def find_accounts_by_customer_id(self, customer_id):
         """Finds all accounts belonging to a specific customer_id."""
         return [account for account in self.accounts.values() if account.customer_id == customer_id]
+
+
+repo = AccountRepository()
+use_case = UseCase(repo)
+
+customer1 = Customer(1, "Jed", "jed@pdax.com", "00000")
+customer2 = Customer(1, "Jed", "jed@pdax.com", "10101")
+account1 = use_case.create_account(customer1.customer_id, customer1.name, customer1.email, customer1.phone_number)
+account2 = use_case.create_account(customer2.customer_id, customer2.name, customer2.email, customer2.phone_number)
+
+
+print(repo.find_accounts_by_customer_id(1))
