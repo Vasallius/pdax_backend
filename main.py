@@ -1,26 +1,44 @@
 import datetime
 import uuid
+from abc import ABC, abstractmethod
+
+
+class AccountRepositoryInterface(ABC):
+    @abstractmethod
+    def save_account(self, account):
+        pass
+
+    @abstractmethod
+    def find_account_by_id(self, account_id):
+        pass
+
+    @abstractmethod
+    def find_accounts_by_customer_id(self, customer_id):
+        pass
 
 
 class Account:
-    def __init__(self, account_id, customer_id, balance, transactions=[]):
+    def __init__(self, account_id, customer_id, balance, transactions=None):
+        if balance < 0:
+            raise ValueError("Initial balance cannot be negative")
         self.account_id = account_id
         self.customer_id = customer_id
         self.balance = balance
-        self.transactions = transactions
+        self.transactions = transactions if transactions is not None else []
 
     def deposit(self, amount):
+        if amount <= 0:
+            raise ValueError("Deposit amount must be positive")
         self.balance += amount
         self.transactions.append(Transaction(self.account_id, amount, "deposit"))
 
     def withdraw(self, amount):
+        if amount <= 0:
+            raise ValueError("Withdrawal amount must be positive")
         if amount > self.balance:
             raise ValueError("Insufficient funds")
         self.balance -= amount
         self.transactions.append(Transaction(self.account_id, amount, "withdraw"))
-
-    def get_balance(self):
-        return self.balance
 
 
 class Customer:
@@ -78,21 +96,18 @@ class UseCase:
         return statement
 
 
-class AccountRepository:
+class AccountRepository(AccountRepositoryInterface):
     def __init__(self):
-        self.accounts = {}  # Key: account_id, Value: Account object
+        self.accounts = {}
 
     def save_account(self, account):
-        """Stores the account in the repository."""
         self.accounts[account.account_id] = account
         return account
 
     def find_account_by_id(self, account_id):
-        """Finds an account by account_id."""
         return self.accounts.get(account_id)
 
     def find_accounts_by_customer_id(self, customer_id):
-        """Finds all accounts belonging to a specific customer_id."""
         return [account for account in self.accounts.values() if account.customer_id == customer_id]
 
 
@@ -120,14 +135,14 @@ use_case.make_transaction(account2.account_id, 200, "withdraw")
 
 # Generate account statements
 statement1 = use_case.generate_account_statement(account1.account_id)
-statement2 = use_case.generate_account_statement(account2.account_id)
+# statement2 = use_case.generate_account_statement(account2.account_id)
 
 # Print the statements
 print(statement1)
-print(statement2)
+# print(statement2)
 
 # Find accounts by customer ID
-accounts_for_customer1 = repo.find_accounts_by_customer_id(customer1.customer_id)
-print(accounts_for_customer1)
+# accounts_for_customer1 = repo.find_accounts_by_customer_id(customer1.customer_id)
+# print(accounts_for_customer1)
 
-print(repo.find_accounts_by_customer_id(1))
+# print(repo.find_accounts_by_customer_id(1))
