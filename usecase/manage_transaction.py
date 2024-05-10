@@ -4,12 +4,16 @@ from entities.account import Account
 
 
 class TransactionManagerInterface(ABC):
+    def __init__(self, account_repository):
+        self.account_repository = account_repository
+
     @abstractmethod
     def make_transaction(self, account_id: str, amount: float, transaction_type: str) -> "Account":
         pass
 
 
 class TransactionManager(TransactionManagerInterface):
+
     def make_transaction(self, account_id: str, amount: float, transaction_type: str) -> "Account":
         account = self.account_repository.find_account_by_id(account_id)
         if account is None:

@@ -5,6 +5,9 @@ from entities.account import Account
 
 
 class AccountManagerInterface(ABC):
+    def __init__(self, account_repository):
+        self.account_repository = account_repository
+
     @abstractmethod
     def create_account(self, customer_id: str, name: str, email: str, phone_number: str) -> "Account":
         pass

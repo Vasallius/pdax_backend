@@ -2,6 +2,10 @@ from abc import ABC, abstractmethod
 
 
 class StatementManagerInterface(ABC):
+
+    def __init__(self, account_repository):
+        self.account_repository = account_repository
+
     @abstractmethod
     def generate_account_statement(self, account_id: str) -> str:
         pass
