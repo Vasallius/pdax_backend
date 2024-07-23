@@ -14,9 +14,12 @@ statement_manager = StatementManager(account_repository)
 customer1 = Customer(1, "Jed Tan", "jed@pdax.com", "000000000")
 
 # Create accounts for the customers
+# Why not just take in a Customer object?
+# Spec says "create_account() that takes customer_id, name, email, and phone_number as input"
 account = account_manager.create_account(customer1.customer_id, customer1.name, customer1.email, customer1.phone_number)
 
 # Make deposits and withdrawals
+
 # Perform a deposit
 transacton_manager.make_transaction(account.account_id, 500, "deposit")
 print(f"After deposit, balance: {account.get_balance()}")
